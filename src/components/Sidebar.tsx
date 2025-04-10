@@ -40,6 +40,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
           <div className="flex items-start gap-2">
             <Info className="h-5 w-5 text-teal-dark shrink-0 mt-0.5" />
             <div className="text-sm text-muted-foreground">
+              <p className="font-medium mb-1">Team Members:</p>
               <p>12305873</p>
               <p>12326550</p>
               <p>12325746</p>
