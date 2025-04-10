@@ -1,5 +1,5 @@
 
-import { FoodItem, CalorieRecord } from "@/types";
+import { FoodItem, CalorieRecord, UserGoal } from "@/types";
 
 // Sample database of common foods and their calorie content per serving
 const foodDatabase: Record<string, number> = {
@@ -88,7 +88,7 @@ const foodDatabase: Record<string, number> = {
   "fried rice": 350,
   "sandwich": 300,
   "soup": 180,
-  "salad": 100,
+  // Removed duplicate "salad" entry
   "noodles": 300,
   "biryani": 400,
   "curry": 350,
