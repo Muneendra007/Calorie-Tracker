@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,23 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Custom colors for our calorie tracker
+				teal: {
+					light: '#4ECDC4',
+					DEFAULT: '#1A9B95',
+					dark: '#1A535C',
+				},
+				coral: {
+					light: '#FFB3B3',
+					DEFAULT: '#FF6B6B',
+					dark: '#E64A4A',
+				},
+				sage: {
+					light: '#F7FFF7',
+					DEFAULT: '#E8F7EE',
+					dark: '#D1EDD8',
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,11 +101,27 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+				'fade-in': {
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(10px)'
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0)'
+          }
+        },
+        'typing': {
+          '0%': { width: '0%' },
+          '100%': { width: '100%' }
+        }
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.3s ease-out',
+        'typing': 'typing 1.5s steps(20, end)'
 			}
 		}
 	},
