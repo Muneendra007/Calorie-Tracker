@@ -40,7 +40,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
           <div className="flex items-start gap-2">
             <Info className="h-5 w-5 text-teal-dark shrink-0 mt-0.5" />
             <div className="text-sm text-muted-foreground">
-              <p>This is a demo app using a local database. In a production version, we would use Gemini API for smarter responses and Nutritionix API for food data.</p>
+              <p>12305873</p>
+              <p>12326550</p>
+              <p>12325746</p>
             </div>
           </div>
         </div>
