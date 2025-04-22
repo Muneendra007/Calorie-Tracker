@@ -7,6 +7,7 @@ import { Message, FoodItem } from '@/types';
 import { generateResponse, saveCalorieData, getUserGoal } from '@/utils/calorieUtils';
 import { searchFoodItems } from '@/utils/foodApi';
 import { v4 as uuidv4 } from 'uuid';
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatInterfaceProps {
   onToggleSidebar: () => void;
@@ -24,7 +25,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
-  
+  const { toast } = useToast();
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -36,7 +38,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
   const handleSendMessage = async () => {
     if (input.trim() === '') return;
     
-    // Add user message
     const userMessage: Message = {
       id: uuidv4(),
       content: input,
@@ -44,7 +45,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
       timestamp: new Date()
     };
     
-    // Add loading message for bot
     const loadingMessage: Message = {
       id: uuidv4(),
       content: '',
@@ -58,20 +58,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
     setIsTyping(true);
     
     try {
-      // Search for food items using the food database API
       const foodItems = await searchFoodItems(input);
-      
       const userGoal = getUserGoal();
-      
-      // Generate a human-readable response
       const response = generateResponse(foodItems, userGoal?.dailyCalorieTarget);
       
-      // Save the food items to storage if any were found
       if (foodItems.length > 0) {
         saveCalorieData(foodItems);
       }
       
-      // Replace loading message with actual response
       setMessages(prev => {
         const newMessages = [...prev];
         const loadingIndex = newMessages.findIndex(msg => msg.id === loadingMessage.id);
@@ -88,7 +82,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
         return newMessages;
       });
     } catch (error) {
-      // Handle errors
+      toast({
+        title: "API Not Configured",
+        description: "Please provide your preferred food database API and key to enable food tracking.",
+        variant: "destructive"
+      });
+      
       setMessages(prev => {
         const newMessages = [...prev];
         const loadingIndex = newMessages.findIndex(msg => msg.id === loadingMessage.id);
@@ -96,7 +95,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
         if (loadingIndex !== -1) {
           newMessages[loadingIndex] = {
             id: loadingMessage.id,
-            content: "Please provide a food database API key to enable food tracking.",
+            content: "Please configure a food database API to enable food tracking.",
             sender: 'bot',
             timestamp: new Date()
           };
@@ -104,7 +103,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
         
         return newMessages;
       });
-      console.error("Error processing message:", error);
     } finally {
       setIsTyping(false);
     }
