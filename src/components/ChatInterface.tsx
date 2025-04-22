@@ -4,8 +4,9 @@ import { Send, Menu } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Message } from '@/types';
-import { extractFoodItems, generateResponse, saveCalorieData, getUserGoal } from '@/utils/calorieUtils';
+import { Message, FoodItem } from '@/types';
+import { generateResponse, saveCalorieData, getUserGoal } from '@/utils/calorieUtils';
+import { fetchGeminiResponse } from '@/utils/geminiApi';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ChatInterfaceProps {
@@ -33,7 +34,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
   
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (input.trim() === '') return;
     
     // Add user message
@@ -57,13 +58,43 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
     setInput('');
     setIsTyping(true);
     
-    // Process the message and generate response (simulating API call)
-    setTimeout(() => {
-      const foodItems = extractFoodItems(input);
+    try {
+      // Generate a prompt for Gemini to identify food items
+      const prompt = `
+        Identify any food or beverage items in this text: "${input}"
+        For each item, return the following JSON format only:
+        [
+          {
+            "name": "food name",
+            "calories": approximate calories per serving,
+            "quantity": estimated quantity from text (default to 1 if not specified)
+          }
+        ]
+        If no food items are detected, return an empty array: []
+        Return ONLY the JSON array, nothing else.
+      `;
+      
+      // Call Gemini API to analyze the input
+      const geminiResponse = await fetchGeminiResponse(prompt);
+      
+      // Parse the response to extract food items
+      let foodItems: FoodItem[] = [];
+      try {
+        // Try to parse the JSON response from Gemini
+        // Clean the response to remove any non-JSON text
+        const cleanedResponse = geminiResponse.replace(/```json|```/g, '').trim();
+        foodItems = JSON.parse(cleanedResponse);
+      } catch (error) {
+        console.error("Failed to parse Gemini response:", error);
+        foodItems = [];
+      }
+      
       const userGoal = getUserGoal();
+      
+      // Generate a human-readable response
       const response = generateResponse(foodItems, userGoal?.dailyCalorieTarget);
       
-      // Save the food items to storage
+      // Save the food items to storage if any were found
       if (foodItems.length > 0) {
         saveCalorieData(foodItems);
       }
@@ -84,9 +115,27 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
         
         return newMessages;
       });
-      
+    } catch (error) {
+      // Handle errors
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const loadingIndex = newMessages.findIndex(msg => msg.id === loadingMessage.id);
+        
+        if (loadingIndex !== -1) {
+          newMessages[loadingIndex] = {
+            id: loadingMessage.id,
+            content: "Sorry, I encountered an error processing your request. Please try again.",
+            sender: 'bot',
+            timestamp: new Date()
+          };
+        }
+        
+        return newMessages;
+      });
+      console.error("Error processing message:", error);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
