@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Menu } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -90,8 +91,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
       toast({
         title: "Food Search Error",
         description: errorMessage === 'No food items found' 
-          ? "Could not find any food items. Please try being more specific."
-          : "There was an error searching for food items. Please try again.",
+          ? "Try searching for common foods like 'apple', 'chicken', 'rice', 'bread', 'egg', 'beef', 'potato', 'milk', or 'yogurt'."
+          : "There was an error searching for food items. Please try another term.",
         variant: "destructive"
       });
       
@@ -103,8 +104,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
           newMessages[loadingIndex] = {
             id: loadingMessage.id,
             content: errorMessage === 'No food items found'
-              ? "I couldn't find any food items. Could you please be more specific about what you ate?"
-              : "Sorry, I encountered an error while searching for food items. Please try again.",
+              ? "I couldn't find any food items. Try searching for common foods like 'apple', 'chicken', 'rice', 'bread', 'egg', 'beef', 'potato', 'milk', or 'yogurt'.",
             sender: 'bot',
             timestamp: new Date()
           };
