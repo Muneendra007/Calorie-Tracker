@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Menu } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Message, FoodItem } from '@/types';
 import { generateResponse, saveCalorieData, getUserGoal } from '@/utils/calorieUtils';
-import { fetchGeminiResponse } from '@/utils/geminiApi';
+import { searchFoodItems } from '@/utils/foodApi';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ChatInterfaceProps {
@@ -59,35 +58,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
     setIsTyping(true);
     
     try {
-      // Generate a prompt for Gemini to identify food items
-      const prompt = `
-        Identify any food or beverage items in this text: "${input}"
-        For each item, return the following JSON format only:
-        [
-          {
-            "name": "food name",
-            "calories": approximate calories per serving,
-            "quantity": estimated quantity from text (default to 1 if not specified)
-          }
-        ]
-        If no food items are detected, return an empty array: []
-        Return ONLY the JSON array, nothing else.
-      `;
-      
-      // Call Gemini API to analyze the input
-      const geminiResponse = await fetchGeminiResponse(prompt);
-      
-      // Parse the response to extract food items
-      let foodItems: FoodItem[] = [];
-      try {
-        // Try to parse the JSON response from Gemini
-        // Clean the response to remove any non-JSON text
-        const cleanedResponse = geminiResponse.replace(/```json|```/g, '').trim();
-        foodItems = JSON.parse(cleanedResponse);
-      } catch (error) {
-        console.error("Failed to parse Gemini response:", error);
-        foodItems = [];
-      }
+      // Search for food items using the food database API
+      const foodItems = await searchFoodItems(input);
       
       const userGoal = getUserGoal();
       
@@ -124,7 +96,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
         if (loadingIndex !== -1) {
           newMessages[loadingIndex] = {
             id: loadingMessage.id,
-            content: "Sorry, I encountered an error processing your request. Please try again.",
+            content: "Please provide a food database API key to enable food tracking.",
             sender: 'bot',
             timestamp: new Date()
           };
