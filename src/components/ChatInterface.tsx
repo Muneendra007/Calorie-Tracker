@@ -59,12 +59,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
     
     try {
       const foodItems = await searchFoodItems(input);
+      
+      if (foodItems.length === 0) {
+        throw new Error('No food items found');
+      }
+
       const userGoal = getUserGoal();
       const response = generateResponse(foodItems, userGoal?.dailyCalorieTarget);
       
-      if (foodItems.length > 0) {
-        saveCalorieData(foodItems);
-      }
+      saveCalorieData(foodItems);
       
       setMessages(prev => {
         const newMessages = [...prev];
@@ -82,9 +85,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
         return newMessages;
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      
       toast({
-        title: "API Not Configured",
-        description: "Please provide your preferred food database API and key to enable food tracking.",
+        title: "Food Search Error",
+        description: errorMessage === 'No food items found' 
+          ? "Could not find any food items. Please try being more specific."
+          : "There was an error searching for food items. Please try again.",
         variant: "destructive"
       });
       
@@ -95,7 +102,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onToggleSidebar }) => {
         if (loadingIndex !== -1) {
           newMessages[loadingIndex] = {
             id: loadingMessage.id,
-            content: "Please configure a food database API to enable food tracking.",
+            content: errorMessage === 'No food items found'
+              ? "I couldn't find any food items. Could you please be more specific about what you ate?"
+              : "Sorry, I encountered an error while searching for food items. Please try again.",
             sender: 'bot',
             timestamp: new Date()
           };
